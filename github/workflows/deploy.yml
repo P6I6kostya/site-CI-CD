@@ -19,8 +19,8 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      # Шаг 1. Скопировать файлы репозитория на виртуальную машину
+        steps:
+      # Шаг 1. Скопировать файлы
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -28,13 +28,33 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # Шаг 3. Упаковать файлы сайта в артефакт
+      # --- НОВЫЕ ШАГИ ДЛЯ ЛИНТИНГА ---
+      # Шаг 3. Установить Node.js (нужен для запуска линтеров)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Шаг 4. Установить и запустить проверку HTML
+      - name: Validate HTML
+        run: |
+          npm install -g html-validate
+          html-validate "*.html"
+
+      # Шаг 5. Установить и запустить проверку CSS
+      - name: Lint CSS
+        run: |
+          npm install -g stylelint stylelint-config-standard
+          stylelint "*.css"
+      # --------------------------------
+
+      # Шаг 6. Упаковать файлы (бывший Шаг 3)
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
 
-      # Шаг 4. Опубликовать артефакт на GitHub Pages
+      # Шаг 7. Опубликовать (бывший Шаг 4)
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
